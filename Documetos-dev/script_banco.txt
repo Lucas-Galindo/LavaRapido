@@ -1,0 +1,141 @@
+-- BANCO LAVA RAPIDO SIMPLES - LUCAS GALINDO
+
+-- Script corrigido para PostgreSQL
+-- Sistema de Gerenciamento de Lavagem de Veículos
+
+-- Tabela Pessoa (tabela base para Cliente e Funcionario)
+CREATE TABLE Pessoa (
+    pess_id SERIAL PRIMARY KEY,
+    pess_nome VARCHAR(100) NOT NULL,
+    pess_cpf VARCHAR(14) NOT NULL UNIQUE,
+    pess_tel VARCHAR(20) NOT NULL
+);
+
+-- Tabela Categoria_Lavagem
+CREATE TABLE Categoria_Lavagem (
+    lavcat_id SERIAL PRIMARY KEY,
+    lavcat_nome VARCHAR(50) NOT NULL,
+    lavcat_tempo INTEGER,
+    lavcat_desc VARCHAR(255) NOT NULL
+);
+
+-- Tabela Categoria_Produto
+CREATE TABLE Categoria_Produto (
+    prodcat_id SERIAL PRIMARY KEY,
+    prodcat_nome VARCHAR(50) NOT NULL,
+    prodcat_desc VARCHAR(255)
+);
+
+-- Tabela Categoria_Veiculo
+CREATE TABLE Categoria_Veiculo (
+    veicat_id SERIAL PRIMARY KEY,
+    veicat_nome VARCHAR(50) NOT NULL,
+    veicat_desc VARCHAR(255) NOT NULL  -- Corrigido: era INTEGER, deveria ser texto
+);
+
+-- Tabela Cliente
+CREATE TABLE Cliente (
+    pess_id INTEGER PRIMARY KEY,
+    cli_matricula SERIAL UNIQUE NOT NULL,
+    FOREIGN KEY (pess_id) REFERENCES Pessoa(pess_id) ON DELETE CASCADE
+);
+
+-- Tabela Funcionario
+CREATE TABLE Funcionario (
+    pess_id INTEGER PRIMARY KEY,
+    func_matricula SERIAL UNIQUE NOT NULL,
+    func_funcao VARCHAR(50),
+    FOREIGN KEY (pess_id) REFERENCES Pessoa(pess_id) ON DELETE CASCADE
+);
+
+-- Tabela Produto
+CREATE TABLE Produto (
+    prod_id SERIAL PRIMARY KEY,
+    prod_nome VARCHAR(100) NOT NULL,
+    prodcat_id INTEGER NOT NULL,
+    FOREIGN KEY (prodcat_id) REFERENCES Categoria_Produto(prodcat_id)
+);
+
+-- Tabela Estoque
+CREATE TABLE Estoque (
+    arm_id SERIAL PRIMARY KEY,
+    arm_total INTEGER DEFAULT 0
+);
+
+-- Tabela Veiculo
+CREATE TABLE Veiculo (
+    veic_id SERIAL PRIMARY KEY,
+    veic_nome VARCHAR(100) NOT NULL,
+    veic_placa VARCHAR(10) NOT NULL UNIQUE,
+    veicat_id INTEGER NOT NULL,
+    pess_id INTEGER NOT NULL,
+    FOREIGN KEY (veicat_id) REFERENCES Categoria_Veiculo(veicat_id),
+    FOREIGN KEY (pess_id) REFERENCES Cliente(pess_id)
+);
+
+-- Tabela Compra
+CREATE TABLE Compra (
+    comp_id SERIAL PRIMARY KEY,
+    comp_total NUMERIC(10,2) NOT NULL,  -- Melhor para valores monetários
+    comp_data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    pess_id INTEGER NOT NULL,
+    FOREIGN KEY (pess_id) REFERENCES Funcionario(pess_id)
+);
+
+-- Tabela Lavagem
+CREATE TABLE Lavagem (
+    lav_id SERIAL PRIMARY KEY,
+    lav_data TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    lavcat_id INTEGER NOT NULL,
+    veic_id INTEGER NOT NULL,
+    func_matricula INTEGER NOT NULL,
+    cli_matricula INTEGER NOT NULL,
+    FOREIGN KEY (lavcat_id) REFERENCES Categoria_Lavagem(lavcat_id),
+    FOREIGN KEY (veic_id) REFERENCES Veiculo(veic_id),
+    FOREIGN KEY (func_matricula) REFERENCES Funcionario(func_matricula),
+    FOREIGN KEY (cli_matricula) REFERENCES Cliente(cli_matricula)
+);
+
+-- Tabela Itens_Compra (relacionamento many-to-many entre Produto e Compra)
+CREATE TABLE Itens_Compra (
+    ic_id SERIAL PRIMARY KEY,
+    prod_id INTEGER NOT NULL,
+    comp_id INTEGER NOT NULL,
+    ic_quantidade INTEGER DEFAULT 1,
+    ic_preco_unitario NUMERIC(10,2),
+    FOREIGN KEY (prod_id) REFERENCES Produto(prod_id),
+    FOREIGN KEY (comp_id) REFERENCES Compra(comp_id),
+    UNIQUE(prod_id, comp_id)
+);
+
+-- Tabela Itens_Estoque (relacionamento entre Estoque e Compra)
+CREATE TABLE Itens_Estoque (
+    ie_id SERIAL PRIMARY KEY,
+    arm_id INTEGER NOT NULL,
+    comp_id INTEGER NOT NULL,
+    ie_data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ie_quantidade INTEGER NOT NULL,
+    FOREIGN KEY (arm_id) REFERENCES Estoque(arm_id),
+    FOREIGN KEY (comp_id) REFERENCES Compra(comp_id),
+    UNIQUE(arm_id, comp_id)
+);
+
+-- Tabela Itens_Lavagem (relacionamento many-to-many entre Produto e Lavagem)
+CREATE TABLE Itens_Lavagem (
+    ip_id SERIAL PRIMARY KEY,
+    prod_id INTEGER NOT NULL,
+    lav_id INTEGER NOT NULL,
+    ip_quantidade INTEGER DEFAULT 1,
+    FOREIGN KEY (prod_id) REFERENCES Produto(prod_id),
+    FOREIGN KEY (lav_id) REFERENCES Lavagem(lav_id),
+    UNIQUE(prod_id, lav_id)
+);
+
+-- Criação de índices para melhor performance
+CREATE INDEX idx_cliente_matricula ON Cliente(cli_matricula);
+CREATE INDEX idx_funcionario_matricula ON Funcionario(func_matricula);
+CREATE INDEX idx_veiculo_placa ON Veiculo(veic_placa);
+CREATE INDEX idx_lavagem_data ON Lavagem(lav_data);
+CREATE INDEX idx_compra_data ON Compra(comp_data);
+CREATE INDEX idx_pessoa_cpf ON Pessoa(pess_cpf);
+
