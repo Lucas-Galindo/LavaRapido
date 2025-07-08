@@ -53,6 +53,8 @@ CREATE TABLE Produto (
     prod_id SERIAL PRIMARY KEY,
     prod_nome VARCHAR(100) NOT NULL,
     prodcat_id INTEGER NOT NULL,
+    prod_validade VARCHAR(100) NOT NULL,
+    prod_metrica VARCHAR(100) NOT NULL,
     FOREIGN KEY (prodcat_id) REFERENCES Categoria_Produto(prodcat_id)
 );
 
@@ -66,11 +68,13 @@ CREATE TABLE Estoque (
 CREATE TABLE Veiculo (
     veic_id SERIAL PRIMARY KEY,
     veic_nome VARCHAR(100) NOT NULL,
+    veic_modelo VARCHAR(100),
+    veic_cor VARCHAR(10),
     veic_placa VARCHAR(10) NOT NULL UNIQUE,
     veicat_id INTEGER NOT NULL,
-    pess_id INTEGER NOT NULL,
+    pesoa_pess_id INTEGER NOT NULL,
     FOREIGN KEY (veicat_id) REFERENCES Categoria_Veiculo(veicat_id),
-    FOREIGN KEY (pess_id) REFERENCES Cliente(pess_id)
+    FOREIGN KEY (pessoa_pess_id) REFERENCES Pessoa(pess_id)
 );
 
 -- Tabela Compra
