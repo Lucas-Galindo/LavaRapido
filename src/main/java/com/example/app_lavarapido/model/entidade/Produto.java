@@ -26,7 +26,7 @@ public class Produto {
     private List<Itens_Lavagem> itensLavagem;
 
     @OneToMany(mappedBy = "produtoCompra")
-    private List<Itens_Estoque> itensCompra;
+    private List<Itens_Compra> itensCompra;
 
     public Produto(Long id, ProdutoInformacao informacao) {
         this.id = id;

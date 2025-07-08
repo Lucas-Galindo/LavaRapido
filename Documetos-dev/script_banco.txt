@@ -72,7 +72,7 @@ CREATE TABLE Veiculo (
     veic_cor VARCHAR(10),
     veic_placa VARCHAR(10) NOT NULL UNIQUE,
     veicat_id INTEGER NOT NULL,
-    pesoa_pess_id INTEGER NOT NULL,
+    pessoa_pess_id INTEGER NOT NULL,
     FOREIGN KEY (veicat_id) REFERENCES Categoria_Veiculo(veicat_id),
     FOREIGN KEY (pessoa_pess_id) REFERENCES Pessoa(pess_id)
 );
